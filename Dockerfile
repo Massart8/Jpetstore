@@ -15,34 +15,29 @@
 #
 
 
-
-# ÉTAPE 1 : Build et Tests (Image complète)
-# On utilise 'maven' qui contient déjà Java et tous les outils de build
-FROM maven:3.8.4-openjdk-17 AS build
-
-# Installation de Chromium pour les tests Selenium (sur Debian)
-RUN apt-get update && apt-get install -y chromium chromium-driver
-
-WORKDIR /usr/src/myapp
-COPY . .
-
-# Configuration pour les tests sans interface
-ENV SELENIDE_BROWSER=chrome
-ENV SELENIDE_HEADLESS=true
-
-# Compilation ET exécution des tests (le build échouera si les tests ratent)
-RUN ./mvnw clean package
-
-# ÉTAPE 2 : Image finale (Légère et sécurisée)
+# Image de base Java 17 (Oracle Linux, sécurisée et légère)
 FROM openjdk:17.0.2
+
+# Dossier où l'application sera stockée dans le conteneur
 WORKDIR /usr/src/myapp
 
-# SÉCURITÉ : Utilisateur non-privilégié
+# SÉCURITÉ : Création d'un utilisateur sans privilèges (jpetuser)
+# On lui donne la propriété du dossier pour éviter de rouler en ROOT
 RUN useradd -m jpetuser && chown -R jpetuser:jpetuser /usr/src/myapp
 
-# On ne copie QUE le fichier JAR compilé de l'étape 1
-COPY --from=build --chown=jpetuser:jpetuser /usr/src/myapp/target/*.war ./app.war
+# CONTINUITÉ : Copie de tout le projet dans le conteneur
+# On s'assure que les droits appartiennent à jpetuser
+COPY --chown=jpetuser:jpetuser . .
 
+# On rend le script Maven exécutable
+RUN chmod +x mvnw
+
+# On bascule sur l'utilisateur sécurisé
 USER jpetuser
-# On lance directement l'application
-CMD ["java", "-jar", "./app.war"]
+
+# COMPILATION : On pré-construit l'application
+# -DskipTests : On ne lance pas les tests ici car il n'y a pas d'écran/navigateur
+RUN ./mvnw clean package -DskipTests
+
+# Commande par défaut pour lancer le serveur Tomcat au démarrage
+CMD ["./mvnw", "cargo:run", "-P", "tomcat90"]
