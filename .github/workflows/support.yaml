@@ -17,7 +17,8 @@ jobs:
       - name: Health Check
         # On attend que l'application soit prête et on teste l'URL
         run: |
-          sleep 30
+          echo "Attente du démarrage complet de Tomcat..."
+          sleep 60  # On passe de 30 à 60 secondes
           curl --silent --fail http://localhost:8080/jpetstore/ || exit 1
 
       - name: Stop Services
