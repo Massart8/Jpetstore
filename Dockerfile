@@ -13,43 +13,42 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
-
-
-# Utilisation de l'image de base 
+# Utilisation de l'image de base (Oracle Linux)
 FROM openjdk:17.0.2
 
 # Passage en ROOT pour installer les outils
 USER root
 
-# INSTALLATION DES OUTILS DE TEST (Version Alpine Linux)
-# - apk update : met à jour la liste des paquets
-# - chromium & chromium-chromedriver : noms des paquets sur Alpine
-RUN apk update && apk add --no-cache \
+# INSTALLATION DES OUTILS DE TEST (Version microdnf)
+# microdnf install : équivalent léger de yum/dnf
+# - chromium : le navigateur
+# - chromedriver : le driver pour Selenium
+RUN microdnf update -y && microdnf install -y \
     chromium \
-    chromium-chromedriver \
-    udev \
-    ttf-freefont
+    chromedriver \
+    && microdnf clean all
 
 # Définition du répertoire de travail
 WORKDIR /usr/src/myapp
 
-# SÉCURITÉ : Utilisateur non-privilégié
-RUN adduser -D docker-user && chown -R docker-user:docker-user /usr/src/myapp
+# SÉCURITÉ : Création de l'utilisateur non-privilégié
+# Sur Oracle Linux, on utilise 'useradd'
+RUN useradd -m jpetuser && chown -R jpetuser:jpetuser /usr/src/myapp
 
 # CONTINUITÉ : Copie des fichiers
-COPY --chown=docker-user:docker-user . .
+COPY --chown=jpetuser:jpetuser . .
 
-# Droits d'exécution
+# Droits d'exécution sur le script Maven
 RUN chmod +x mvnw
 
-# CONFIGURATION SELENIUM (INDISPENSABLE)
+# CONFIGURATION SELENIUM HEADLESS
 ENV SELENIDE_BROWSER=chrome
 ENV SELENIDE_HEADLESS=true
-# Sur Alpine, le chemin du driver est spécifique
+# Chemins par défaut pour Oracle Linux
 ENV CHROME_BIN=/usr/bin/chromium-browser
 ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
-USER docker-user
+USER jpetuser
 
 # Compilation
 RUN ./mvnw clean package -DskipTests
