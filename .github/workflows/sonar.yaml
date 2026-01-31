@@ -32,9 +32,10 @@ jobs:
       - name: Analyze with SonarCloud
         # On envoie le rapport extrait de Docker vers SonarCloud
         run: >
+          - name: Analyze with SonarCloud
           ./mvnw sonar:sonar 
-          -Dsonar.projectKey=ton_projet_key
-          -Dsonar.organization=ton_org
+          -Dsonar.projectKey=kya03_tp-docker  # <--- METS BIEN LE NOM VU SUR SONAR
+          -Dsonar.organization=kya03          # <--- TON NOM D'UTILISATEUR
           -Dsonar.host.url=https://sonarcloud.io 
           -Dsonar.login=$SONAR_TOKEN 
           -Dsonar.coverage.jacoco.xmlReportPaths=./jacoco.xml
