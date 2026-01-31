@@ -15,29 +15,28 @@
 #
 
 
-# Image de base Java 17 (Oracle Linux, sécurisée et légère)
+# Image de base Java 17 (Oracle Linux), choisie pour sa sécurité
 FROM openjdk:17.0.2
 
-# Dossier où l'application sera stockée dans le conteneur
+# Dossier de travail dans le conteneur
 WORKDIR /usr/src/myapp
 
-# SÉCURITÉ : Création d'un utilisateur sans privilèges (jpetuser)
-# On lui donne la propriété du dossier pour éviter de rouler en ROOT
+# SÉCURITÉ : Création d'un utilisateur non-root pour l'exécution
+# Cela limite les risques si l'application est compromise
 RUN useradd -m jpetuser && chown -R jpetuser:jpetuser /usr/src/myapp
 
-# CONTINUITÉ : Copie de tout le projet dans le conteneur
-# On s'assure que les droits appartiennent à jpetuser
+# Copie des fichiers sources avec les bonnes permissions
 COPY --chown=jpetuser:jpetuser . .
 
-# On rend le script Maven exécutable
+# On rend le Maven Wrapper exécutable pour le build
 RUN chmod +x mvnw
 
-# On bascule sur l'utilisateur sécurisé
+# Passage à l'utilisateur sécurisé
 USER jpetuser
 
-# COMPILATION : On pré-construit l'application
-# -DskipTests : On ne lance pas les tests ici car il n'y a pas d'écran/navigateur
+# Compilation de l'application (JAR/WAR)
+# On ignore les tests ici car ils seront gérés par le workflow GitHub
 RUN ./mvnw clean package -DskipTests
 
-# Commande par défaut pour lancer le serveur Tomcat au démarrage
+# Commande pour démarrer l'application avec Tomcat
 CMD ["./mvnw", "cargo:run", "-P", "tomcat90"]
