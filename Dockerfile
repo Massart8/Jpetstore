@@ -15,45 +15,43 @@
 #
 
 
-# Utilisation de l'image de base Java 17 
+# Utilisation de l'image de base 
 FROM openjdk:17.0.2
 
-# Passage temporaire en ROOT pour installer les dépendances système nécessaires
+# Passage en ROOT pour installer les outils
 USER root
 
-# INSTALLATION DES OUTILS DE TEST (Répare l'erreur SessionNotCreatedException)
-# - chromium : le navigateur qui exécutera les tests d'interface
-# - chromium-driver : permet à Selenium de piloter Chromium
-RUN apt-get update && apt-get install -y \
+# INSTALLATION DES OUTILS DE TEST (Version Alpine Linux)
+# - apk update : met à jour la liste des paquets
+# - chromium & chromium-chromedriver : noms des paquets sur Alpine
+RUN apk update && apk add --no-cache \
     chromium \
-    chromium-driver \
-    && rm -rf /var/lib/apt/lists/*
+    chromium-chromedriver \
+    udev \
+    ttf-freefont
 
-# Définition du répertoire de travail 
+# Définition du répertoire de travail
 WORKDIR /usr/src/myapp
 
-# SÉCURITÉ : Création de l'utilisateur non-privilégié et attribution des droits
-RUN useradd -m jpetuser && chown -R jpetuser:jpetuser /usr/src/myapp
+# SÉCURITÉ : Utilisateur non-privilégié
+RUN adduser -D docker-user && chown -R docker-user:docker-user /usr/src/myapp
 
-# CONTINUITÉ : Copie de tous les fichiers du projet avec les permissions pour jpetuser
-# Cela inclut le dossier .mvn/ corrigé précédemment
-COPY --chown=jpetuser:jpetuser . .
+# CONTINUITÉ : Copie des fichiers
+COPY --chown=docker-user:docker-user . .
 
-# Droits d'exécution sur le script Maven Wrapper
+# Droits d'exécution
 RUN chmod +x mvnw
 
-# CONFIGURATION SELENIUM (INDISPENSABLE POUR GITHUB ACTIONS)
-# Ces variables forcent les tests à s'exécuter sans fenêtre graphique (mode headless)
+# CONFIGURATION SELENIUM (INDISPENSABLE)
 ENV SELENIDE_BROWSER=chrome
 ENV SELENIDE_HEADLESS=true
-ENV CHROME_BIN=/usr/bin/chromium
+# Sur Alpine, le chemin du driver est spécifique
+ENV CHROME_BIN=/usr/bin/chromium-browser
+ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
-# Retour à l'utilisateur sécurisé pour la phase de build et d'exécution
-USER jpetuser
+USER docker-user
 
-# Compilation du projet
-# On garde -DskipTests ici pour la construction de l'image initiale
+# Compilation
 RUN ./mvnw clean package -DskipTests
 
-# Commande de lancement de l'application 
 CMD ["./mvnw", "cargo:run", "-P", "tomcat90"]
