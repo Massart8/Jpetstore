@@ -1,42 +1,43 @@
-#
-#    Copyright 2010-2021 the original author or authors.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License");
-#    you may not use this file except in compliance with the License.
-#    You may obtain a copy of the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS,
-#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    See the License for the specific language governing permissions and
-#    limitations under the License.
-#
-
-name: SonarCloud
+name: SonarCloud with Docker
 
 on:
   push:
     branches:
-      - master
+      - master # S'exécute uniquement lors d'une mise à jour de la branche principale
 
 jobs:
   build:
-    if: github.repository_owner == 'mybatis'
+    # IMPORTANT : Remplace 'mybatis' par ton propre nom d'utilisateur GitHub
+    if: github.repository_owner == 'kya03' 
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
-          # Disabling shallow clone is recommended for improving relevancy of reporting
-          fetch-depth: 0
-      - name: Set up JDK
+          fetch-depth: 0 # Récupère tout l'historique pour que Sonar puisse voir qui a écrit quelle ligne
+
+      - name: Build and Test in Docker
+        # On lance les tests dans Docker pour générer le rapport Jacoco
+        run: |
+          docker build -t jpetstore-sonar .
+          docker run --name sonar-reporter jpetstore-sonar ./mvnw verify jacoco:report -Dlicense.skip=true
+          docker cp sonar-reporter:/app/target/site/jacoco/jacoco.xml ./jacoco.xml
+
+      - name: Set up JDK 17
+        # SonarCloud a besoin de Java pour envoyer les résultats, même si le build est fait en Docker
         uses: actions/setup-java@v3
         with:
           java-version: 17
           distribution: zulu
+
       - name: Analyze with SonarCloud
-        run: ./mvnw verify jacoco:report sonar:sonar -B -Dsonar.projectKey=mybatis_jpetstore-6 -Dsonar.organization=mybatis -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dlicense.skip=true --no-transfer-progress
+        # On envoie le rapport extrait de Docker vers SonarCloud
+        run: >
+          ./mvnw sonar:sonar 
+          -Dsonar.projectKey=ton_projet_key
+          -Dsonar.organization=ton_org
+          -Dsonar.host.url=https://sonarcloud.io 
+          -Dsonar.login=$SONAR_TOKEN 
+          -Dsonar.coverage.jacoco.xmlReportPaths=./jacoco.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
