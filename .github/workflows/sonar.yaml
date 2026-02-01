@@ -1,7 +1,12 @@
-name: SonarCloud with Docker
+# .github/workflows/sonar-docker.yaml
+name: CI/CD SonarCloud + Docker
 
+# Déclencheur : push sur main et pull requests vers main
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
 
@@ -10,25 +15,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Récupération du code (historique complet requis par Sonar)
+      # 1️⃣ Checkout complet du code
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2️⃣ Installation de Java 17
+      # 2️⃣ Installer Java 17 dans le runner
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'zulu'
 
-      # 3️⃣ Installation de Chrome (pour Selenide)
+      # 3️⃣ Installer Chrome (pour Selenide si nécessaire)
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@latest
 
       # 4️⃣ Build + tests unitaires + couverture
-      # 👉 Les tests d’intégration sont désactivés pour éviter les échecs CI
       - name: Build and Test
         run: |
           ./mvnw clean verify jacoco:report \
@@ -36,14 +40,29 @@ jobs:
           -Dselenide.browser=chrome \
           -DskipITs=true
 
-      # 5️⃣ Analyse SonarCloud (plugin versionné explicitement)
+      # 5️⃣ Analyse SonarCloud
       - name: SonarCloud analysis
         run: |
           ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:4.0.0.4121:sonar \
           -Dsonar.projectKey=kya03_tp-docker \
           -Dsonar.organization=kya03 \
           -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.branch.name=main
+          -Dsonar.branch.name=${{ github.head_ref || 'main' }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 6️⃣ Build Docker image
+      - name: Build Docker image
+        run: docker build -t kya03/tp-docker:latest .
+
+      # 7️⃣ Login Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 8️⃣ Push Docker image
+      - name: Push Docker image
+        run: docker push kya03/tp-docker:latest
