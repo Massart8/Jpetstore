@@ -43,11 +43,11 @@ jobs:
       # 5️⃣ Analyse SonarCloud
       - name: SonarCloud analysis
         run: |
-          ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:4.0.0.4121:sonar \
+          ./mvnw sonar:sonar \
           -Dsonar.projectKey=kya03_tp-docker \
           -Dsonar.organization=kya03 \
           -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.branch.name=${{ github.head_ref || 'main' }}
+          -Dsonar.branch.name=main
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
