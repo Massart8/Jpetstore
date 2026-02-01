@@ -1,7 +1,5 @@
-# .github/workflows/sonar-docker.yaml
-name: CI/CD SonarCloud + Docker
+name: CI/CD Docker
 
-# Déclencheur : push sur main et pull requests vers main
 on:
   push:
     branches:
@@ -21,18 +19,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 2️⃣ Installer Java 17 dans le runner
+      # 2️⃣ Installer Java 17 pour Maven
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'zulu'
 
-      # 3️⃣ Installer Chrome (pour Selenide si nécessaire)
+      # 3️⃣ Installer Chrome si nécessaire pour les tests (Selenide)
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@latest
 
-      # 4️⃣ Build + tests unitaires + couverture
+      # 4️⃣ Build + tests unitaires
       - name: Build and Test
         run: |
           ./mvnw clean verify jacoco:report \
@@ -40,29 +38,17 @@ jobs:
           -Dselenide.browser=chrome \
           -DskipITs=true
 
-      # 5️⃣ Analyse SonarCloud
-      - name: SonarCloud analysis
-        run: |
-          ./mvnw sonar:sonar \
-          -Dsonar.projectKey=kya03_tp-docker \
-          -Dsonar.organization=kya03 \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.branch.name=main
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # 6️⃣ Build Docker image
+      # 5️⃣ Build Docker image
       - name: Build Docker image
         run: docker build -t kya03/tp-docker:latest .
 
-      # 7️⃣ Login Docker Hub
+      # 6️⃣ Login Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 8️⃣ Push Docker image
+      # 7️⃣ Push Docker image
       - name: Push Docker image
         run: docker push kya03/tp-docker:latest
