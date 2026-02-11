@@ -1,5 +1,4 @@
 <%--
-
        Copyright 2010-2023 the original author or authors.
 
        Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,35 +12,42 @@
        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
        See the License for the specific language governing permissions and
        limitations under the License.
-
 --%>
 <%@ include file="../common/IncludeTop.jsp"%>
 
-<div id="Catalog"><stripes:form
-	beanclass="org.mybatis.jpetstore.web.actions.AccountActionBean"
-	focus="">
+<div id="Catalog">
+    <stripes:form beanclass="org.mybatis.jpetstore.web.actions.AccountActionBean">
 
-	<h3>User Information</h3>
+        <h3>User Information</h3>
 
-	<table>
-		<tr>
-			<td>User ID:</td>
-			<td><stripes:text name="username" /></td>
-		</tr>
-		<tr>
-			<td>New password:</td>
-			<td><stripes:text name="password" /></td>
-		</tr>
-		<tr>
-			<td>Repeat password:</td>
-			<td><stripes:text name="repeatedPassword" /></td>
-		</tr>
-	</table>
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Field Name</th>
+                    <th scope="col">Input</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">User ID:</th>
+                    <td><stripes:text name="username" /></td>
+                </tr>
+                <tr>
+                    <th scope="row">New password:</th>
+                    <td><stripes:password name="password" /></td>
+                </tr>
+                <tr>
+                    <th scope="row">Repeat password:</th>
+                    <td><stripes:password name="repeatedPassword" /></td>
+                </tr>
+            </tbody>
+        </table>
 
-	<%@ include file="IncludeAccountFields.jsp"%>
+        <%@ include file="IncludeAccountFields.jsp"%>
 
-	<stripes:submit name="newAccount" value="Save Account Information" />
+        <stripes:submit name="newAccount" value="Save Account Information" />
 
-</stripes:form></div>
+    </stripes:form>
+</div>
 
 <%@ include file="../common/IncludeBottom.jsp"%>
