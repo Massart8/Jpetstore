@@ -1,93 +1,56 @@
 /**
- *    Copyright 2010-2022 the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       https://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2010-2022 the original author or authors.
  */
+
 body {
-  margin: 0ex 10ex 0ex 10ex;
-  padding: 0ex;
-  font-family: helvetica, tahoma, arial, verdana, sans-serif;
-  font-size: 2ex;
+  margin: 0 10% 0 10%; /* Utilisation de % pour un design plus responsive */
+  padding: 0;
+  font-family: system-ui, -apple-system, helvetica, arial, sans-serif;
+  font-size: 16px; /* Utilisation de px ou rem pour la lisibilité standard */
   color: #333;
   background-color: #444;
 }
 
 pre {
   font-family: "Courier New", Courier, monospace;
-
   font-style: normal;
   background-color: #FFFFFF;
-  white-space: pre
+  white-space: pre-wrap; /* Évite que le texte ne dépasse du conteneur */
 }
 
-h1 {
-  margin: 1ex 0ex 1ex 0ex;
-  padding: 0ex;
-
-  line-height: 3ex;
-  font-weight: 900;
-  color: #666;
+h1, h2, h3 {
+  margin: 1rem 0;
+  padding: 0;
+  color: #333;
+  line-height: 1.2;
 }
 
-h2 {
-  margin: 2ex 0ex 1ex 0ex;
-  padding: 0ex;
-
-  line-height: 2ex;
-  font-weight: 700;
-  color: #444;
-}
-
-h3 {
-  margin: 1ex 0ex 1ex 0ex;
-  padding: 0ex;
-
-  line-height: 1.6ex;
-  font-weight: 700;
-  color: #222;
-}
+h1 { font-weight: 900; color: #666; font-size: 2rem; }
+h2 { font-weight: 700; color: #444; font-size: 1.5rem; }
+h3 { font-weight: 700; color: #222; font-size: 1.2rem; }
 
 p {
-  font-family: helvetica, tahoma, arial, verdana, sans-serif;
-
-  margin: 0ex 0ex 0ex 0ex;
-  padding: 2ex;
+  margin: 0;
+  padding: 1rem;
 }
 
 img {
   border: 0;
-}
-
-li {
-  font-family: helvetica, tahoma, arial, verdana, sans-serif;
-
-  margin: 0ex 0ex 0ex 0ex;
-  padding: 0ex;
+  max-width: 100%; /* Empêche les images de déborder */
 }
 
 table {
   border-width: 0;
+  border-collapse: collapse; /* Meilleur rendu des bordures */
   empty-cells: show;
+  width: 100%; /* Par défaut les tables occupent l'espace */
 }
 
 td, th {
-  empty-cells: show;
-  padding: .3ex .3ex;
+  padding: 0.5rem;
   vertical-align: top;
   text-align: left;
-  border-width: 0;
-  border-spacing: 0;
-  background-color: #ececec
+  background-color: #ececec;
 }
 
 th {
@@ -95,239 +58,108 @@ th {
   background-color: #e2e2e2;
 }
 
-a, a:visited, a:link {
+a {
   color: #039;
-
   text-decoration: none;
-  font-family: helvetica, tahoma, arial, verdana, sans-serif;
 }
 
 a:hover {
   color: #69f;
+  text-decoration: underline; /* Améliore l'accessibilité (indicateur visuel) */
 }
 
-a.Button, a.Button:link, a.Button:visited {
-  padding: .3ex;
+/* Boutons */
+a.Button, 
+#Catalog input[type="submit"] {
+  display: inline-block;
+  padding: 0.5rem 1rem;
   color: #fff;
   background-color: #005e21;
   text-decoration: none;
-  font-family: helvetica, tahoma, arial, verdana, sans-serif;
-  font-size: 1.5ex;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 4px; /* Un peu de modernité */
+  cursor: pointer;
 }
 
-a.Button:hover {
-  color: #000;
-  background-color: #54c07a;
-}
-
-#Logo {
-  width: 33%;
-  height: 9ex;
-  margin: 0ex 0ex 0ex 0ex;
-  padding: 0ex 0ex 0ex 0ex;
-  border-width: 0ex 0ex .3ex 0px;
-  border-style: solid;
-  border-color: #ccc;
-  float: left;
-  background-color: #000;
+a.Button:hover, 
+#Catalog input[type="submit"]:hover {
   color: #fff;
-  line-height: 9ex;
-  voice-family: "\"}\"";
-  voice-family: inherit;
+  background-color: #007a2c;
 }
 
-body>#Logo {
-  height: 9ex;
-}
-
-#Menu {
-  width: 33%;
-  height: 9ex;
-  margin: 0ex 0ex 0ex 0ex;
-  padding: 0ex 0ex 0ex 0ex;
-  border-width: 0ex 0ex .3ex 0px;
-  border-style: solid;
-  border-color: #ccc;
+/* Header Sections */
+#Logo, #Menu, #Search {
+  width: 33.33%;
+  height: 80px;
   float: left;
   background-color: #000;
+  line-height: 80px;
+}
+
+#Logo { color: #fff; }
+
+#Menu, #Menu a {
   color: #eaac00;
-  text-decoration: none;
-  font-family: helvetica, tahoma, arial, verdana, sans-serif;
   text-align: center;
-  line-height: 9ex;
-  voice-family: "\"}\"";
-  voice-family: inherit;
-}
-
-#Menu, #Menu a, #Menu a:link, #Menu a:visited, #Menu a:hover {
-  color: #eaac00;
-  text-decoration: none;
-  font-family: helvetica, tahoma, arial, verdana, sans-serif;
-}
-
-body>#Menu {
-  height: 9ex;
-}
-
- {
 }
 
 #Search {
-  width: 33%;
-  height: 9ex;
-  margin: 0ex 0ex 0ex 0ex;
-  padding: 0ex 0ex 0ex 0ex;
-  border-width: 0ex 0ex .3ex 0px;
-  border-style: solid;
-  border-color: #ccc;
-  float: left;
   text-align: center;
-  background-color: #000;
   color: #eaac00;
-  line-height: 9ex;
-  voice-family: "\"}\"";
-  voice-family: inherit;
-}
-
-body>#Search {
-  height: 9ex;
 }
 
 #Search input {
-  border-width: .1ex .1ex .1ex .1ex;
-  border-style: solid;
-  border-color: #aaa;
+  border: 1px solid #aaa;
   background-color: #666;
   color: #eaac00;
+  padding: 4px;
 }
 
 #QuickLinks {
+  clear: both;
   text-align: center;
   background-color: #FFF;
-  width: 99%;
+  width: 100%;
+  padding: 10px 0;
 }
 
-#PoweredBy {
-  width: 30%;
-  height: 9ex;
-  margin: 0ex 0ex 0ex 0ex;
-  padding: 0ex 0ex 0ex 0ex;
-  border-width: .3ex 0ex .3ex 0px;
-  border-style: solid;
-  border-color: #ccc;
-  float: left;
-  background-color: #000;
-  color: #fff;
-  line-height: 9ex;
-  voice-family: "\"}\"";
-  voice-family: inherit;
-}
-
-body>#PoweredBy {
-  height: 9ex;
-}
-
-#Banner {
-  width: 69%;
-  height: 9ex;
-  margin: 0ex 0ex 0ex 0ex;
-  padding: 0ex 0ex 0ex 0ex;
-  border-width: .3ex 0ex .3ex 0px;
-  border-style: solid;
-  border-color: #ccc;
-  float: left;
-  background-color: #000;
-  color: #fff;
-  line-height: 9ex;
-  voice-family: "\"}\"";
-  voice-family: inherit;
-}
-
-body>#Banner {
-  height: 9ex;
-}
-
+/* Layout */
 #Content {
-  margin: 0;
-  padding: 0ex 0ex 0ex 0ex;
-  width: 99%;
-  color: #333;
+  clear: both;
   background-color: #FFF;
-  border-width: 0;
-}
-
-#Separator {
-  clear:both;
-  margin: 0;
-  height:0;
+  min-height: 400px;
 }
 
 #Main {
-  margin: 0;
-  padding: 1ex;
-  color: #333;
-  background-color: #FFF;
-  border-width: 1ex 0ex 2ex 0px;
-  border-style: solid;
-  border-color: #fff;
+  padding: 20px;
+  overflow: hidden; /* Clearfix simple */
 }
 
 #Sidebar {
   float: left;
-  background:inherit;
-  width: 30%;
+  width: 25%;
 }
 
 #MainImage {
   float: left;
-  background:inherit;
-  text-align:center;
-  width: 50%;
+  width: 70%;
+  text-align: center;
 }
 
 #Catalog {
-  padding: 1ex;
-  background:inherit;
-  text-align:center;
+  padding: 20px;
+  clear: both;
 }
 
-#Catalog input[type="submit"]{
-  padding: .3ex;
-  color: #fff;
-  background-color: #005e21;
-  text-decoration: none;
-  font-family: helvetica, tahoma, arial, verdana, sans-serif;
-  font-size: 1.5ex;
-  border-width:0;
-}
-#Catalog input[type="submit"]:hover {
-  color: #000;
-  background-color: #54c07a;
-  cursor:pointer;
-}
-
-#Catalog table{
-  margin-left:auto;
-  margin-right:auto;
-}
-
-#BackLink{
-  padding: 1ex;
+#BackLink {
   float: right;
-  border-width: .1ex 0ex .1ex 0px;
-  border-style: solid;
-  border-color: #000;
+  padding: 5px 10px;
+  border: 1px solid #000;
+  margin-bottom: 10px;
 }
 
-#Cart{
-  width: 69.99%;
-  float: left;
-  background-color:#fff;
-}
-
-#MyList{
-  width: 30%;
-  float: left;
-  background-color:#ccc;
-  text-align:left;
+/* Footer & Other */
+#Separator {
+  clear: both;
 }
