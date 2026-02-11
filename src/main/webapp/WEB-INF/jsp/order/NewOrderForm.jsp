@@ -1,5 +1,4 @@
 <%--
-
        Copyright 2010-2023 the original author or authors.
 
        Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,79 +12,90 @@
        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
        See the License for the specific language governing permissions and
        limitations under the License.
-
 --%>
 <%@ include file="../common/IncludeTop.jsp"%>
 
-<div id="Catalog"><stripes:form
-	beanclass="org.mybatis.jpetstore.web.actions.OrderActionBean">
+<div id="Catalog">
+    <stripes:form beanclass="org.mybatis.jpetstore.web.actions.OrderActionBean">
 
-	<table>
-		<tr>
-			<th colspan=2>Payment Details</th>
-		</tr>
-		<tr>
-			<td>Card Type:</td>
-			<td><stripes:select name="order.cardType">
-				<stripes:options-collection
-					collection="${actionBean.creditCardTypes}" />
-			</stripes:select></td>
-		</tr>
-		<tr>
-			<td>Card Number:</td>
-			<td><stripes:text name="order.creditCard" /> * Use a fake
-			number!</td>
-		</tr>
-		<tr>
-			<td>Expiry Date (MM/YYYY):</td>
-			<td><stripes:text name="order.expiryDate" /></td>
-		</tr>
-		<tr>
-			<th colspan=2>Billing Address</th>
-		</tr>
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="2" scope="colgroup" style="background-color: #eee;">Payment Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">Card Type:</th>
+                    <td>
+                        <stripes:select name="order.cardType">
+                            <stripes:options-collection collection="${actionBean.creditCardTypes}" />
+                        </stripes:select>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Card Number:</th>
+                    <td>
+                        <stripes:text name="order.creditCard" /> 
+                        <span style="font-size: 0.9em; color: #666;">* Use a fake number!</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Expiry Date (MM/YYYY):</th>
+                    <td><stripes:text name="order.expiryDate" /></td>
+                </tr>
+                
+                <tr>
+                    <th colspan="2" scope="colgroup" style="background-color: #eee;">Billing Address</th>
+                </tr>
 
-		<tr>
-			<td>First name:</td>
-			<td><stripes:text name="order.billToFirstName" /></td>
-		</tr>
-		<tr>
-			<td>Last name:</td>
-			<td><stripes:text name="order.billToLastName" /></td>
-		</tr>
-		<tr>
-			<td>Address 1:</td>
-			<td><stripes:text size="40" name="order.billAddress1" /></td>
-		</tr>
-		<tr>
-			<td>Address 2:</td>
-			<td><stripes:text size="40" name="order.billAddress2" /></td>
-		</tr>
-		<tr>
-			<td>City:</td>
-			<td><stripes:text name="order.billCity" /></td>
-		</tr>
-		<tr>
-			<td>State:</td>
-			<td><stripes:text size="4" name="order.billState" /></td>
-		</tr>
-		<tr>
-			<td>Zip:</td>
-			<td><stripes:text size="10" name="order.billZip" /></td>
-		</tr>
-		<tr>
-			<td>Country:</td>
-			<td><stripes:text size="15" name="order.billCountry" /></td>
-		</tr>
+                <tr>
+                    <th scope="row">First name:</th>
+                    <td><stripes:text name="order.billToFirstName" /></td>
+                </tr>
+                <tr>
+                    <th scope="row">Last name:</th>
+                    <td><stripes:text name="order.billToLastName" /></td>
+                </tr>
+                <tr>
+                    <th scope="row">Address 1:</th>
+                    <td><stripes:text size="40" name="order.billAddress1" /></td>
+                </tr>
+                <tr>
+                    <th scope="row">Address 2:</th>
+                    <td><stripes:text size="40" name="order.billAddress2" /></td>
+                </tr>
+                <tr>
+                    <th scope="row">City:</th>
+                    <td><stripes:text name="order.billCity" /></td>
+                </tr>
+                <tr>
+                    <th scope="row">State:</th>
+                    <td><stripes:text size="4" name="order.billState" /></td>
+                </tr>
+                <tr>
+                    <th scope="row">Zip:</th>
+                    <td><stripes:text size="10" name="order.billZip" /></td>
+                </tr>
+                <tr>
+                    <th scope="row">Country:</th>
+                    <td><stripes:text size="15" name="order.billCountry" /></td>
+                </tr>
 
-		<tr>
-			<td colspan=2><stripes:checkbox name="shippingAddressRequired" />
-			Ship to different address...</td>
-		</tr>
+                <tr>
+                    <td colspan="2">
+                        <label>
+                            <stripes:checkbox name="shippingAddressRequired" />
+                            Ship to different address...
+                        </label>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
-	</table>
+        <stripes:submit name="newOrder" value="Continue" />
 
-	<stripes:submit name="newOrder" value="Continue" />
-
-</stripes:form></div>
+    </stripes:form>
+</div>
 
 <%@ include file="../common/IncludeBottom.jsp"%>
