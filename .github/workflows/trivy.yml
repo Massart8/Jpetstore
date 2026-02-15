@@ -1,0 +1,63 @@
+name: Security Audit - JPetStore Existing Image
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: # Permet de lancer le scan manuellement avec un bouton
+
+permissions:
+  contents: write
+  security-events: write
+
+jobs:
+  trivy-scan-audit:
+    name: Audit Sécurité Image Docker
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Récupération du code (pour configurer Sonar plus tard)
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Analyse TRIVY - Format SARIF (Pour l'onglet Security de GitHub)
+      # On pointe directement vers ton image sur Docker Hub
+      - name: Run Trivy (SARIF format)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: 'kya03/tp-docker:latest'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      # 3. Analyse TRIVY - Format JSON (Pour ton SonarQube local)
+      - name: Run Trivy (JSON format)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: 'kya03/tp-docker:latest'
+          format: 'json'
+          output: 'trivy-report.json'
+          severity: 'CRITICAL,HIGH'
+
+      # 4. Envoi des résultats vers l'onglet Security de GitHub
+      - name: Upload to GitHub Security Tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      # 5. Synchronisation avec ton SonarQube (via ngrok)
+      - name: SonarQube Sync
+        uses: sonarsource/sonarqube-scan-action@v4
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=JPetStore-Project
+            -Dsonar.externalIssuesReportPaths=trivy-report.json
+
+      # 6. Résumé visuel pour ton rapport de TP
+      - name: Generate Dashboard Summary
+        run: |
+          echo "### 🛡️ Rapport d'Audit Trivy 2026" >> $GITHUB_STEP_SUMMARY
+          echo "L'image **kya03/tp-docker:latest** a été inspectée." >> $GITHUB_STEP_SUMMARY
+          echo "Les résultats sont disponibles dans l'onglet **Security** et sur **SonarQube**." >> $GITHUB_STEP_SUMMARY
