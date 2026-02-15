@@ -1,27 +1,39 @@
-name: Security Audit - JPetStore Existing Image
+name: ANALYSE SCAN TRIVY
 
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch: # Permet de lancer le scan manuellement avec un bouton
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: # Permet de lancer le scan manuellement
 
 permissions:
   contents: write
   security-events: write
 
 jobs:
-  trivy-scan-audit:
-    name: Audit Sécurité Image Docker
+  security-audit:
+    name: Security & Quality Analysis
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Récupération du code (pour configurer Sonar plus tard)
-      - name: Checkout Code
+      # 1. Récupération du code source
+      - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Important pour SonarQube
 
-      # 2. Analyse TRIVY - Format SARIF (Pour l'onglet Security de GitHub)
-      # On pointe directement vers ton image sur Docker Hub
-      - name: Run Trivy (SARIF format)
+      # 2. Analyse de l'image Docker existante avec Trivy (Format JSON pour Sonar)
+      - name: Run Trivy Scan (JSON)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: 'kya03/tp-docker:latest' # Ton image sur Docker Hub
+          format: 'json'
+          output: 'trivy-report.json'
+          severity: 'CRITICAL,HIGH'
+
+      # 3. Analyse de l'image Docker avec Trivy (Format SARIF pour l'onglet Security)
+      - name: Run Trivy Scan (SARIF)
         uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: 'kya03/tp-docker:latest'
@@ -29,35 +41,29 @@ jobs:
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
 
-      # 3. Analyse TRIVY - Format JSON (Pour ton SonarQube local)
-      - name: Run Trivy (JSON format)
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: 'kya03/tp-docker:latest'
-          format: 'json'
-          output: 'trivy-report.json'
-          severity: 'CRITICAL,HIGH'
-
-      # 4. Envoi des résultats vers l'onglet Security de GitHub
-      - name: Upload to GitHub Security Tab
+      # 4. Upload des alertes dans l'onglet Security de GitHub
+      - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
 
-      # 5. Synchronisation avec ton SonarQube (via ngrok)
-      - name: SonarQube Sync
-        uses: sonarsource/sonarqube-scan-action@v4
+      # 5. Analyse SonarQube (Version v6 pour éviter la 403)
+      - name: SonarQube Analysis
+        uses: sonarsource/sonarqube-scan-action@v5 # Utilisation de la version la plus stable
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_NGROK_URL }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
             -Dsonar.projectKey=JPetStore-Project
             -Dsonar.externalIssuesReportPaths=trivy-report.json
+            -Dsonar.scanner.skipScmCheck=true
+            -Dsonar.javascript.node.maxspace=4096
 
-      # 6. Résumé visuel pour ton rapport de TP
-      - name: Generate Dashboard Summary
+      # 6. Résumé visuel dans GitHub Actions
+      - name: Visual Summary
         run: |
-          echo "### 🛡️ Rapport d'Audit Trivy 2026" >> $GITHUB_STEP_SUMMARY
-          echo "L'image **kya03/tp-docker:latest** a été inspectée." >> $GITHUB_STEP_SUMMARY
-          echo "Les résultats sont disponibles dans l'onglet **Security** et sur **SonarQube**." >> $GITHUB_STEP_SUMMARY
+          echo "### 🛡️ Rapport DevSecOps Terminée" >> $GITHUB_STEP_SUMMARY
+          echo "Analyse effectuée sur : \`kya03/tp-docker:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trivy Scan** : ✅ Terminé (Rapport SARIF envoyé)" >> $GITHUB_STEP_SUMMARY
+          echo "- **SonarQube** : ✅ Synchronisation effectuée" >> $GITHUB_STEP_SUMMARY
