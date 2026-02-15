@@ -1,0 +1,68 @@
+name: DevSecOps - SonarQube + Trivy Scan
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  devsecops-scan:
+    name: Security & Quality Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout du code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Scan Trivy (JSON pour SonarQube)
+      - name: Trivy Scan (JSON for SonarQube)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: kya03/tp-docker:latest
+          format: json
+          output: trivy-report.json
+          severity: CRITICAL,HIGH
+
+      # 3. Scan Trivy (SARIF pour GitHub Security)
+      - name: Trivy Scan (SARIF)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: kya03/tp-docker:latest
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+
+      # 4. Upload SARIF vers GitHub Security
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+      # 5. Analyse SonarQube (VERSION STABLE)
+      - name: SonarQube Analysis
+        uses: sonarsource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_NGROK_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=JPetStore-Project
+            -Dsonar.externalIssuesReportPaths=trivy-report.json
+            -Dsonar.scanner.skipScmCheck=true
+            -Dsonar.java.binaries=.
+
+      # 6. Résumé visuel
+      - name: DevSecOps Summary
+        run: |
+          echo "### ✅ DevSecOps Scan Completed" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔍 Trivy: Image Docker analysée" >> $GITHUB_STEP_SUMMARY
+          echo "- 🧪 SonarQube: Code + failles Trivy synchronisées" >> $GITHUB_STEP_SUMMARY
