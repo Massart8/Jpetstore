@@ -1,0 +1,65 @@
+name: Docker Image Scan with Trivy + SonarQube
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  trivy-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Cloner le repo
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # 2️⃣ Installer Trivy
+      - name: Install Trivy
+        run: |
+          sudo apt update
+          sudo apt install -y wget apt-transport-https gnupg lsb-release unzip
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt update
+          sudo apt install -y trivy
+
+      # 3️⃣ Pull de l'image Docker
+      - name: Pull Docker Image
+        run: docker pull massart8/image-jpetstore
+
+      # 4️⃣ Scanner l'image Docker et générer un rapport JSON
+      - name: Scan Docker Image with Trivy
+        run: |
+          echo "🚀 Scanning Docker image for HIGH/CRITICAL vulnerabilities..."
+          trivy image -f json -o trivy-report.json --exit-code 1 --severity HIGH,CRITICAL massart8/image-jpetstore || true
+          echo "✅ Scan terminé. Rapport JSON généré : trivy-report.json"
+
+      # 5️⃣ Afficher les vulnérabilités HIGH/CRITICAL directement dans les logs
+      - name: Display HIGH/CRITICAL vulnerabilities
+        run: |
+          echo "🔍 Listing HIGH and CRITICAL vulnerabilities:"
+          cat trivy-report.json | jq '.Results[].Vulnerabilities[] | select(.Severity=="HIGH" or .Severity=="CRITICAL") | {PkgName, InstalledVersion, Severity, Title, CVE}'
+
+      # 6️⃣ Archiver le rapport JSON comme artefact
+      - name: Upload Trivy Report as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: trivy-report
+          path: trivy-report.json
+
+      # 7️⃣ SonarQube Analysis (optionnel)
+      - name: SonarQube Analysis
+        if: ${{ secrets.SONAR_HOST_URL && secrets.SONAR_TOKEN }}
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
+          unzip sonar-scanner-cli-4.8.0.2856-linux.zip -d $HOME
+          $HOME/sonar-scanner-4.8.0.2856-linux/bin/sonar-scanner \
+            -Dsonar.projectKey=Jpetstore \
+            -Dsonar.sources=. \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.host.url=$SONAR_HOST_URL
