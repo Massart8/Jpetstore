@@ -51,15 +51,20 @@ jobs:
 
       # 7️⃣ SonarQube Analysis (optionnel)
       - name: SonarQube Analysis
-        if: ${{ secrets.SONAR_HOST_URL && secrets.SONAR_TOKEN }}
-        env:
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
-          unzip sonar-scanner-cli-4.8.0.2856-linux.zip -d $HOME
-          $HOME/sonar-scanner-4.8.0.2856-linux/bin/sonar-scanner \
-            -Dsonar.projectKey=Jpetstore \
-            -Dsonar.sources=. \
-            -Dsonar.login=$SONAR_TOKEN \
-            -Dsonar.host.url=$SONAR_HOST_URL
+  env:
+    SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  run: |
+    if [ -z "$SONAR_HOST_URL" ] || [ -z "$SONAR_TOKEN" ]; then
+      echo "❌ SonarQube secrets not set, skipping SonarQube analysis."
+    else
+      echo "🚀 Running SonarQube analysis..."
+      wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
+      unzip sonar-scanner-cli-4.8.0.2856-linux.zip -d $HOME
+      $HOME/sonar-scanner-4.8.0.2856-linux/bin/sonar-scanner \
+        -Dsonar.projectKey=Jpetstore \
+        -Dsonar.sources=. \
+        -Dsonar.login=$SONAR_TOKEN \
+        -Dsonar.host.url=$SONAR_HOST_URL
+    fi
+
